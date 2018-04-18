@@ -1,0 +1,31 @@
+{
+  "name": "serenity-webdriverio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marthinus-engelbrecht/serenity-webdriverio.git"
+  },
+  "keywords": [
+    "serenity-js",
+    "webdriverio",
+    "tdd",
+    "bdd",
+    "test",
+    "selenium",
+    "appium",
+    "webdriverjs",
+    "webdriver",
+    "testing"
+  ],
+  "author": "Marthinus Engelbrecjt",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/marthinus-engelbrecht/serenity-webdriverio/issues"
+  },
+  "homepage": "https://github.com/marthinus-engelbrecht/serenity-webdriverio#readme"
+}
