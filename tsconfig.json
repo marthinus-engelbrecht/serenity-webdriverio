@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": [ "es7", "dom" ],
+    "module": "commonjs",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "./staging/transpiled"
+  },
+
+  "include": [
+    "source/config/mocha-bootstrap.ts",
+    "source/**/*.ts"
+  ],
+
+  "exclude": [
+    "node_modules",
+    "examples"
+  ]
+}
