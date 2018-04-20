@@ -7,8 +7,8 @@ gulp.task('pre-push', ['test']);
 
 gulp.task('test', ['compile'], () => {
     return spawn(
-        'istanbul',
-        'cover --root build/local -x **/**unit_test.js --dir ./build/coverage ./node_modules/mocha/bin/_mocha build/**/**unit_test.js --require build/local/config/mocha-bootstrap.js'.split(' '),
+        'nyc',
+                '--require ts-node/register --require ./source/config/mocha-bootstrap.ts --extension .ts ./node_modules/mocha/bin/_mocha source/**/**unit_test.ts'.split(' '),
         {stdio: 'inherit'})
         .on('close', (exitCode)=> {
             process.exit(exitCode)
