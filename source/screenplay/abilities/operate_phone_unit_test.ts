@@ -3,16 +3,34 @@ import {Client, remote} from 'webdriverio';
 import {Target} from '../ui';
 import {Actor} from '@serenity-js/core/lib/screenplay';
 
+
+
+
 describe('Unit Test: OperatePhone', function () {
-    let mockClient = {
+    let resolve: Function;
+
+    let promise = new Promise(innerResolve => {
+        resolve = function() {
+            console.log('Resolving thigns');
+            innerResolve();
+        }
+    });
+
+    const mockClient = {
         touch() {
+        },
+
+        setValue() {
         }
     };
 
-    let mockRemote = new Proxy(remote, {
+    const mockRemote = new Proxy(remote, {
         apply: function () {
             mockClient.touch = sinon.spy(function () {
                 return new Promise(resolve => resolve())
+            });
+            mockClient.setValue = sinon.spy(function () {
+                return promise
             });
             return mockClient
         }
@@ -20,7 +38,7 @@ describe('Unit Test: OperatePhone', function () {
 
     describe('Given an actor', function () {
         let actor;
-        let mockedActor = {
+        const mockedActor = {
             abilityTo: {
 
             }
@@ -64,6 +82,30 @@ describe('Unit Test: OperatePhone', function () {
 
             it('it should call phoneClient.touch with the targets selector', function () {
                 expect(mockClient.touch).to.have.been.calledWith(theTarget.selector)
+            });
+        });
+
+        describe('when enterValue is called with a target and a value', function () {
+            const theTarget = Target.called('#textField');
+            const theValue = 45;
+            let operatePhonePromise;
+
+            beforeEach(function () {
+                operatePhonePromise = OperatePhone.using(phoneClient).enterValue(theTarget, theValue);
+            });
+
+            it('it should call phoneClient.setValue with the target selector', function () {
+                expect(mockClient.setValue).to.have.been.calledWith(theTarget.selector, theValue)
+            });
+
+            describe('And the action is successful', function () {
+                beforeEach(function () {
+                    resolve()
+                });
+
+                it('Then it should return a fulfilled promise',async function () {
+                    await expect(operatePhonePromise).to.be.fulfilled
+                });
             });
         });
     });

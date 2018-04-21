@@ -22,4 +22,10 @@ export class OperatePhone implements Ability {
                 })
         })
     }
+
+    enterValue(target: Target, value: string | number | Array<any>) : PromiseLike<void> {
+        return new Promise(resolve => [
+            this.phoneClient.setValue(target.selector, value).then(() => resolve())
+        ])
+    }
 }
