@@ -11,7 +11,6 @@ describe('Unit Test: OperatePhone', function () {
 
     let promise = new Promise(innerResolve => {
         resolve = function() {
-            console.log('Resolving thigns');
             innerResolve();
         }
     });

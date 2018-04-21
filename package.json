@@ -2,7 +2,8 @@
   "name": "serenity-webdriverio",
   "version": "1.0.0",
   "description": "",
-  "main": "source/index.ts",
+  "main": "build/local/index.js",
+  "types": "build/local/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
