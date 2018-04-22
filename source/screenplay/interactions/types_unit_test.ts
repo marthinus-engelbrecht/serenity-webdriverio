@@ -31,10 +31,6 @@ describe('Unit Test: Types', function () {
             it('Then the value should be entered into the target', function () {
                 expect(operatePhone.enterValue).to.have.been.calledWith(searchBox, theValue);
             });
-
-            // it('Then the value should be entered into the target', function () {
-            //     expect(operatePhone.enterValue).to.have.been.calledWith(theValue, searchBox);
-            // });
         });
     });
 });
