@@ -3,32 +3,7 @@ import {Client, remote} from 'webdriverio';
 import {Target} from '../ui';
 import {Actor} from '@serenity-js/core/lib/screenplay';
 import {Element} from 'webdriverio';
-
-class Differed<T> {
-    public resolve: Function;
-    public reject: Function;
-
-    public promise: PromiseLike<T>;
-
-    constructor() {
-        let resolve: Function;
-        let reject: Function;
-
-        this.promise = new Promise((innerResolve, innerReject) => {
-            resolve = function (returnValueMock?: T) {
-                innerResolve(returnValueMock || undefined);
-            };
-
-            reject = function () {
-                innerReject();
-            }
-        });
-
-        this.resolve = resolve;
-        this.reject = reject;
-    }
-}
-
+import {Differed} from '../../testHelpers/differed';
 
 function setupMocks() {
     let differed = {
@@ -107,18 +82,13 @@ describe('Unit Test: OperatePhone', function () {
     });
 
     describe('Given a wedbdriverio client', function () {
-        const {remoteMock, clientMock, differed} = setupMocks();
-
-        let phoneClient: Client<any>;
-
-        beforeEach(function () {
-            phoneClient = remoteMock()
-        });
-
         describe('When touch is called with a target', function () {
+            const {remoteMock, clientMock, differed} = setupMocks();
+            let phoneClient: Client<any>;
             const theTarget = Target.called('#doStuff');
 
             beforeEach(function () {
+                phoneClient = remoteMock();
                 OperatePhone.using(phoneClient).touch(theTarget);
             });
 
@@ -128,11 +98,14 @@ describe('Unit Test: OperatePhone', function () {
         });
 
         describe('When enterValue is called with a target and a value', function () {
+            const {remoteMock, clientMock, differed} = setupMocks();
             const theTarget = Target.called('#textField');
             const theValue = 45;
+            let phoneClient: Client<any>;
             let operatePhonePromise;
 
             beforeEach(function () {
+                phoneClient = remoteMock();
                 operatePhonePromise = OperatePhone.using(phoneClient).enterValue(theTarget, theValue);
             });
 
@@ -152,16 +125,17 @@ describe('Unit Test: OperatePhone', function () {
         });
 
         describe('When selectElementFromList is called with a targets selector', function () {
+            const {remoteMock, clientMock, differed} = setupMocks();
             const expectedSelectedElement = {
                 text: 'Magic Beans',
                 id: "UniqueElementId2"
             };
-
-            const theTarget = Target.called(',searchResults');
-
+            const theTarget = Target.called('.searchResults');
+            let phoneClient: Client<any>;
             let operatePhonePromise;
 
             before(function () {
+                phoneClient = remoteMock();
                 operatePhonePromise = OperatePhone.using(phoneClient).selectElementFromList(theTarget, expectedSelectedElement.text);
             });
 
@@ -214,6 +188,77 @@ describe('Unit Test: OperatePhone', function () {
 
                     it('Then phoneClient.touchId should be called with the selected element\'s id', function () {
                         expect(clientMock.elementIdClick).to.have.been.calledWith(expectedSelectedElement.id)
+                    });
+                });
+            });
+        });
+
+        describe('When listIncludes is called with a target that is a list and an item', function () {
+            const {remoteMock, clientMock, differed} = setupMocks();
+            const expectedSelectedElement = {
+                text: 'Magic Beans',
+                id: "UniqueElementId2"
+            };
+            const theTarget = Target.called('.searchResults');
+            let phoneClient: Client<any>;
+            let operatePhonePromise;
+
+            before(function () {
+                phoneClient = remoteMock();
+                operatePhonePromise = OperatePhone.using(phoneClient).listIncludes(theTarget, expectedSelectedElement.text);
+            });
+
+            it('Then it should call phoneClient.element with the target selector', function () {
+                expect(clientMock.elements).to.have.been.calledWith(theTarget.selector)
+            });
+
+            describe('And phoneClient.element returns successfully with an array', function () {
+                let returnValue;
+
+                const elementsMock: Element[] = [
+                    {
+                        ELEMENT: "UniqueElementId1",
+                    },
+                    {
+                        ELEMENT: expectedSelectedElement.id
+                    },
+                ];
+
+                const elementIdTextResponseMockArray = [
+                    {
+                        value: "FLEECE OF GIDEON"
+                    },
+                    {
+                        value: expectedSelectedElement.text
+                    }
+                ];
+
+                const responseMockElements = {
+                    value: elementsMock
+                };
+
+                beforeEach(async function () {
+                    differed.elementsPromise.resolve(responseMockElements);
+
+                    elementIdTextResponseMockArray.forEach((elementIdTextResponseMock, index) => {
+                        differed.elementIdTextPromises[index].resolve(elementIdTextResponseMock)
+                    });
+
+                    differed.elementIdClickPromise.resolve();
+
+                    returnValue = await operatePhonePromise;
+                });
+
+                it('Then it should call phoneClient.elementIdText for each element in the array', async function () {
+                    elementsMock.forEach(function (elementMock) {
+                        expect(clientMock.elementIdText).to.have.been.calledWith(elementMock.ELEMENT)
+                    })
+                });
+
+                describe('And phoneClient.elementIdText is successfully called for each element in the element array', function () {
+
+                    it('Then listIncludes should return true', function () {
+                        expect(returnValue).to.be.true
                     });
                 });
             });

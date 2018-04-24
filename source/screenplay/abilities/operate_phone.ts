@@ -32,8 +32,15 @@ export class OperatePhone implements Ability {
 
     selectElementFromList(target: Target, text: string): PromiseLike<void> {
         return new Promise(async (resolve) => {
-            const {value: partialElementArray} = await this.phoneClient.elements(target.selector);
-            const elementsArray: any[] = await this.acquireElementsText(partialElementArray);
+            const elementsIdArray = await this.getElementIds(target);
+            const elementsTextArray = await this.getElementsText(elementsIdArray);
+            const elementsArray = elementsIdArray.map((id, index) => {
+                return {
+                    id: id,
+                    text: elementsTextArray[index]
+                }
+            });
+
             const selectedElement = elementsArray.find(element => element.text === text);
             await this.phoneClient.elementIdClick(selectedElement.id);
 
@@ -41,17 +48,23 @@ export class OperatePhone implements Ability {
         })
     }
 
-    private async acquireElementsText(elementArray: any) : Promise<any[]>{
+    private async getElementIds(target: Target) {
+        const rawResults = await this.phoneClient.elements(target.selector);
+        const rawElementsArray = rawResults.value;
+        return rawElementsArray.map(item => item.ELEMENT);
+    }
+
+    async listIncludes(target: Target, item: string) : Promise<boolean> {
+        const elementsIdArray = await this.getElementIds(target);
+        const elementTextArray = await this.getElementsText(elementsIdArray);
+        return elementTextArray.includes(item);
+    }
+
+    private async getElementsText(elementsIdArray: string[]) : Promise<string[]>{
         let promises = [];
 
-        elementArray.forEach((element) => {
-            const promise = this.phoneClient.elementIdText(element.ELEMENT).then(item => {
-                return {
-                    text: item.value,
-                    id: element.ELEMENT
-                };
-            });
-
+        elementsIdArray.forEach((elementId) => {
+            const promise = this.phoneClient.elementIdText(elementId).then(item => item.value);
             promises.push(promise)
         });
 
