@@ -7,7 +7,7 @@ import {Differed} from '../../testHelpers/differed';
 
 function setupMocks() {
     let differed = {
-        touchElementPromise: new Differed<Element>(),
+        touchElementPromise: undefined,
         setValuePromise: new Differed<void>(),
         elementsPromise: new Differed<Element[]>(),
         elementIdTextPromises: [
@@ -21,6 +21,7 @@ function setupMocks() {
 
     let clientMock = {
         touch: sinon.spy(function () {
+            differed.touchElementPromise = new Differed<Element>();
             return differed.touchElementPromise.promise
         }),
         setValue: sinon.spy(function () {
@@ -70,7 +71,7 @@ describe('Unit Test: OperatePhone', function () {
             actor = ActorProxy('actor')
         });
 
-        describe('when the phone is operated as the actor', function () {
+        describe('When the phone is operated as the actor', function () {
             beforeEach(function () {
                 OperatePhone.as(actor);
             });
@@ -85,16 +86,39 @@ describe('Unit Test: OperatePhone', function () {
         describe('When touch is called with a target', function () {
             const {remoteMock, clientMock, differed} = setupMocks();
             let phoneClient: Client<any>;
+            let touchResponsePromise: Promise<void>;
             const theTarget = Target.called('#doStuff');
 
             beforeEach(function () {
                 phoneClient = remoteMock();
-                OperatePhone.using(phoneClient).touch(theTarget);
+                touchResponsePromise = OperatePhone.using(phoneClient).touch(theTarget);
             });
 
             it('it should call phoneClient.touch with the targets selector', function () {
                 expect(clientMock.touch).to.have.been.calledWith(theTarget.selector)
             });
+
+            describe('And the target is successfully touched', function () {
+                beforeEach(function () {
+                    differed.touchElementPromise.resolve();
+                });
+
+                it('Then phoneClient.touch should resolve with undefined', async function () {
+                    await expect(touchResponsePromise).to.eventually.equal(undefined)
+                });
+            });
+
+            describe('And the target cannot be found', function () {
+                const cantBeFoundErr = 'Can\'t find it man'
+
+                beforeEach(function () {
+                    differed.touchElementPromise.reject(cantBeFoundErr);
+                });
+
+                it('Then phoneClient.touch should resolve with undefined', async function () {
+                    await expect(touchResponsePromise).to.rejectedWith(cantBeFoundErr)
+                });
+            })
         });
 
         describe('When enterValue is called with a target and a value', function () {

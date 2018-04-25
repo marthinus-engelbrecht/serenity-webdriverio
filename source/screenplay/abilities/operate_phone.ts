@@ -14,13 +14,14 @@ export class OperatePhone implements Ability {
     constructor(private phoneClient: Client<any>) {
     }
 
-    touch(target: Target): PromiseLike<void> {
-        return new Promise(resolve => {
+    touch(target: Target): Promise<void> {
+        return new Promise((resolve, reject) => {
             this.phoneClient.touch(target.selector, false)
                 .then(function () {
                     //ensure void return type
                     resolve()
                 })
+                .catch(reject)
         })
     }
 
