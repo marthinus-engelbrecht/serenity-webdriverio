@@ -1,6 +1,6 @@
 import {AnswersQuestions, Interaction, UsesAbilities} from '@serenity-js/core/lib/screenplay';
 import {Target} from '../ui';
-import {OperatePhone} from '../../../build/local/screenplay/abilities/operate_phone';
+import {OperatePhone} from '../abilities';
 
 export class Types implements Interaction{
     private target: Target
