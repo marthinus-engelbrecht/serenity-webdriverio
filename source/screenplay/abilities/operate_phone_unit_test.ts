@@ -8,7 +8,7 @@ import {Differed} from '../../testHelpers/differed';
 function setupMocks() {
     let differed = {
         touchElementPromise: undefined,
-        setValuePromise: new Differed<void>(),
+        setValuePromise: undefined,
         elementsPromise: new Differed<Element[]>(),
         elementIdTextPromises: [
             new Differed<string>(),
@@ -25,6 +25,7 @@ function setupMocks() {
             return differed.touchElementPromise.promise
         }),
         setValue: sinon.spy(function () {
+            differed.setValuePromise = new Differed<void>();
             return differed.setValuePromise.promise
         }),
         elements: sinon.spy(function () {
@@ -109,7 +110,7 @@ describe('Unit Test: OperatePhone', function () {
             });
 
             describe('And the target cannot be found', function () {
-                const cantBeFoundErr = 'Can\'t find it man'
+                const cantBeFoundErr = 'Can\'t find it man';
 
                 beforeEach(function () {
                     differed.touchElementPromise.reject(cantBeFoundErr);
@@ -137,13 +138,25 @@ describe('Unit Test: OperatePhone', function () {
                 expect(clientMock.setValue).to.have.been.calledWith(theTarget.selector, theValue)
             });
 
-            describe('And the action is successful', function () {
+            describe('And the value was set successfully', function () {
                 beforeEach(function () {
                     differed.setValuePromise.resolve()
                 });
 
                 it('Then it should return a fulfilled promise', async function () {
-                    await expect(operatePhonePromise).to.be.fulfilled
+                    await expect(operatePhonePromise).to.eventually.equal(undefined)
+                });
+            });
+
+            describe('And it failed to set the value', function () {
+                const cantBeFoundErr = 'Can\'t find it man';
+
+                beforeEach(function () {
+                    differed.setValuePromise.reject(cantBeFoundErr)
+                });
+
+                it('Then it should return a rejected promise with the error', async function () {
+                    await expect(operatePhonePromise).to.be.rejectedWith(cantBeFoundErr)
                 });
             });
         });
