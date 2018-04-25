@@ -10,11 +10,11 @@ export class Differed<T> {
 
         this.promise = new Promise((innerResolve, innerReject) => {
             resolve = function (returnValueMock?: T) {
-                innerResolve(returnValueMock || undefined);
+                innerResolve(returnValueMock);
             };
 
-            reject = function () {
-                innerReject();
+            reject = function (rejectValueMock?: T) {
+                innerReject(rejectValueMock);
             }
         });
 

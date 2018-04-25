@@ -30,7 +30,7 @@ export class OperatePhone implements Ability {
         ])
     }
 
-    selectElementFromList(target: Target, text: string): PromiseLike<void> {
+    selectElementFromList(target: Target, text: string): Promise<void> {
         return new Promise(async (resolve) => {
             const elementsIdArray = await this.getElementIds(target);
             const elementsTextArray = await this.getElementsText(elementsIdArray);

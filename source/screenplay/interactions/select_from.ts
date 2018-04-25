@@ -18,7 +18,7 @@ export class SelectFrom implements Interaction {
         return this;
     }
 
-    performAs(actor: UsesAbilities & AnswersQuestions): PromiseLike<void> {
+    performAs(actor: UsesAbilities & AnswersQuestions): Promise<void> {
         return OperatePhone.as(actor).selectElementFromList(this.target, this.text);
     }
 }
