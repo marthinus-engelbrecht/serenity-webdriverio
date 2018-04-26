@@ -1,4 +1,4 @@
-import {Target} from './target';
+import {Target} from '../../../../source/screenplay';
 
 describe('Unit Test: Target', function () {
     describe('Given a selector text', function () {

@@ -1,8 +1,6 @@
-import {Target} from '../ui';
-import {OperatePhone} from '../abilities';
+import {OperatePhone, Target, Types} from '../../../../source/screenplay/index';
 import {remote} from 'webdriverio'
 import {Actor} from '@serenity-js/core/lib/screenplay';
-import {Types} from './types';
 
 let OperatePhoneUsingMock = new Proxy(OperatePhone.using, {
     apply: function () {

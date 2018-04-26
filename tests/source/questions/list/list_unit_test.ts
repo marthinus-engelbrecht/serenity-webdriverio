@@ -1,9 +1,7 @@
 import {remote} from "webdriverio";
-import {List} from './list';
+import {OperatePhone, List, Target} from '../../../../source/screenplay';
 import {Actor} from '@serenity-js/core/lib/screenplay';
-import {OperatePhone} from '../abilities';
-import {Target} from '../ui';
-import {Differed} from '../../testHelpers/differed';
+import {Differed} from '../../../helpers/differed';
 
 describe('Unit Test: List', function () {
     describe('Given a list', function () {

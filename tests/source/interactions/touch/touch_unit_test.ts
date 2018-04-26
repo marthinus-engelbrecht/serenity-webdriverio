@@ -1,6 +1,4 @@
-import {Target} from '../ui';
-import {OperatePhone} from '../abilities';
-import {Touch} from './touch';
+import {OperatePhone, Touch, Target} from '../../../../source/screenplay/index';
 import {remote} from 'webdriverio'
 import {Actor} from '@serenity-js/core/lib/screenplay';
 

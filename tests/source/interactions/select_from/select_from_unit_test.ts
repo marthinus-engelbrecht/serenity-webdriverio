@@ -1,9 +1,7 @@
 import {remote} from "webdriverio";
-import {SelectFrom} from './select_from';
+import {OperatePhone, SelectFrom, Target} from '../../../../source/screenplay';
 import {Actor} from '@serenity-js/core/lib/screenplay';
-import {OperatePhone} from '../abilities';
-import {Target} from '../ui';
-import {Differed} from '../../testHelpers/differed';
+import {Differed} from '../../../helpers/differed';
 
 let selectElementFromListDifferedPromise;
 
@@ -53,7 +51,7 @@ describe('Unit Test: SelectFrom', function () {
             describe('And the item is not found', function () {
                 beforeEach(function () {
                     selectElementFromListDifferedPromise.reject()
-                })
+                });
 
                 it('Then the promise should be rejected with undefined', async function () {
                     await expect(selectFromPromise).to.be.rejectedWith(undefined);
