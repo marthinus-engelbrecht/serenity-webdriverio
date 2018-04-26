@@ -34,20 +34,23 @@ export class OperatePhone implements Ability {
     }
 
     selectElementFromList(target: Target, text: string): Promise<void> {
-        return new Promise(async (resolve) => {
-            const elementsIdArray = await this.getElementIds(target);
-            const elementsTextArray = await this.getElementsText(elementsIdArray);
-            const elementsArray = elementsIdArray.map((id, index) => {
-                return {
-                    id: id,
-                    text: elementsTextArray[index]
-                }
-            });
+        return new Promise(async (resolve, reject) => {
+            try {
+                const elementsIdArray = await this.getElementIds(target);
+                const elementsTextArray = await this.getElementsText(elementsIdArray);
+                const elementsArray = elementsIdArray.map((id, index) => {
+                    return {
+                        id: id,
+                        text: elementsTextArray[index]
+                    }
+                });
 
-            const selectedElement = elementsArray.find(element => element.text === text);
-            await this.phoneClient.elementIdClick(selectedElement.id);
-
-            resolve()
+                const selectedElement = elementsArray.find(element => element.text === text);
+                await this.phoneClient.elementIdClick(selectedElement.id);
+                resolve()
+            } catch (error) {
+                reject(error)
+            }
         })
     }
 
