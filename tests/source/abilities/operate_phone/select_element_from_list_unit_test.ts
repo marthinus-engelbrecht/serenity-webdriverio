@@ -1,22 +1,25 @@
-import {Client, Element, remote} from "webdriverio";
+import {Client, remote} from "webdriverio";
 import {Dido} from '../../../helpers/dido';
-import {ClientMock, differed} from '../../../helpers/phoneClientMock';
-import {ignoreExpectedUnhandledRejection, simulateConnectionFailure} from './helpers';
+import {ClientMock, ServerMock} from '../../../helpers/client_server_mock';
+import {ignoreExpectedUnhandledRejection} from './helpers';
 import {OperatePhone, Target} from '../../../../source/screenplay';
+
 
 describe('When selectElementFromList is called with a targets selector', function () {
     const remoteMock = Dido.createMethodMock(remote, ClientMock);
-    const expectedSelectedElement = {
+    const elemenToBeSelected = {
         text: 'Magic Beans',
         id: "UniqueElementId2"
     };
     const theTarget = Target.called('.searchResults');
     let phoneClient: Client<any>;
+    let serverMock: ServerMock;
     let operatePhonePromise;
 
     beforeEach(function () {
+        serverMock = new ServerMock(elemenToBeSelected);
         phoneClient = remoteMock();
-        operatePhonePromise = OperatePhone.using(phoneClient).selectElementFromList(theTarget, expectedSelectedElement.text);
+        operatePhonePromise = OperatePhone.using(phoneClient).selectElementFromList(theTarget, elemenToBeSelected.text);
     });
 
     it('Then it should call phoneClient.element with the target selector', function () {
@@ -24,55 +27,30 @@ describe('When selectElementFromList is called with a targets selector', functio
     });
 
     describe('And phoneClient.element returns a fulfilled promise with an array', function () {
-        const elementsMock: Element[] = [
-            {
-                ELEMENT: "UniqueElementId1",
-            },
-            {
-                ELEMENT: expectedSelectedElement.id
-            },
-        ];
-
-        const elementIdTextResponseMockArray = [
-            {
-                value: "FLEECE OF GIDEON"
-            },
-            {
-                value: expectedSelectedElement.text
-            }
-        ];
-
-        const responseMockElements = {
-            value: elementsMock
-        };
+        let elementMockIds: Array<string>;
 
         beforeEach(function () {
-            differed.elements.resolve(responseMockElements);
+            const response = serverMock.respondTo('elements').withSuccess();
+            elementMockIds = response.value.map(element => element.ELEMENT)
         });
 
         describe('And there is no connection issues', function () {
             beforeEach(async function () {
-                elementIdTextResponseMockArray.forEach((elementIdTextResponseMock, index) => {
-                    differed.elementIdText[index].resolve(elementIdTextResponseMock)
-                });
-
-                await Promise.all(differed.elementIdText.map(item => item.promise));
+                await serverMock.connect();
             });
 
             it('Then it should call phoneClient.elementIdText for each element in the array', function () {
-                elementsMock.forEach(function (elementMock) {
-                    expect(phoneClient.elementIdText).to.have.been.calledWith(elementMock.ELEMENT)
-                })
+                expect(phoneClient.elementIdText).to.be.calledWithEach(elementMockIds);
             });
 
             describe('And phoneClient.elementIdText is successfully called for each element in the element array', function () {
                 it('Then phoneClient.touchId should be called with the selected element\'s id', function () {
-                    expect(phoneClient.elementIdClick).to.have.been.calledWith(expectedSelectedElement.id)
+                    expect(phoneClient.elementIdClick).to.have.been.calledWith(elemenToBeSelected.id)
                 });
 
                 describe('And phoneClient.elementIdClick was successful', function () {
                     beforeEach(function () {
-                        differed.elementIdClick.resolve('I was touched')
+                        serverMock.respondTo('elementIdClick').withSuccess();
                     });
 
                     it('Then selectElementFromList should return a resolved promise with the value undefined', async function () {
@@ -83,10 +61,10 @@ describe('When selectElementFromList is called with a targets selector', functio
         });
 
         describe('And there are connection issues', function () {
-            const connectionError = 'Cannot connect to port 8246, access denied';
+            let connectionError;
 
             beforeEach(function () {
-                simulateConnectionFailure(differed, elementIdTextResponseMockArray, connectionError);
+                connectionError = serverMock.disconnect();
             });
 
             it('Then selectElementFromList should return a rejected promise with the error', async function () {
@@ -101,9 +79,10 @@ describe('When selectElementFromList is called with a targets selector', functio
     });
 
     describe('And phoneClient.element returns a rejected promise with an error', function () {
-        const error = 'Can\'t do it captain I don\'t have the power';
+        let error;
+
         beforeEach(function () {
-            differed.elements.reject(error)
+            error = serverMock.respondTo('elements').withRejection();
         });
 
         it('Then selectElementFromList should return with a rejected promise and the error', async function () {

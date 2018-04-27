@@ -1,6 +1,6 @@
 import {Client, remote} from "webdriverio";
 import {Dido} from '../../../helpers/dido';
-import {ClientMock, differed} from '../../../helpers/phoneClientMock';
+import {ClientMock, differed} from '../../../helpers/client_server_mock';
 import {OperatePhone, Target} from '../../../../source/screenplay';
 
 describe('When touch is called with a target', function () {

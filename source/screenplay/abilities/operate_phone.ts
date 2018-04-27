@@ -1,5 +1,5 @@
-import {Ability, Actor, UsesAbilities} from "@serenity-js/core/lib/screenplay";
-import {Client, Element} from 'webdriverio';
+import {Ability, UsesAbilities} from "@serenity-js/core/lib/screenplay";
+import {Client} from 'webdriverio';
 import {Target} from '../ui';
 
 export class OperatePhone implements Ability {
