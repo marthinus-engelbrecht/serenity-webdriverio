@@ -57,6 +57,18 @@ describe('When selectElementFromList is called with a targets selector', functio
                         await expect(operatePhonePromise).to.eventually.equal(undefined);
                     });
                 });
+
+                describe('And phoneClient.elementIdClick was a failure', function () {
+                    let error;
+
+                    beforeEach(function () {
+                        error = serverMock.respondTo('elementIdClick').withRejection()
+                    });
+
+                    it('Then selectElementFromList should return with a rejected promise', async function () {
+                        await expect(operatePhonePromise).to.be.rejectedWith(error)
+                    });
+                });
             });
         });
 
