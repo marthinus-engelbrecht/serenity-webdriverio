@@ -1,16 +1,18 @@
 import {Client, remote} from "webdriverio";
 import {Dido} from '../../../helpers/dido';
-import {ClientMock, differed} from '../../../helpers/client_server_mock';
+import {ClientMock, ServerMock} from '../../../helpers/client_server_mock';
 import {OperatePhone, Target} from '../../../../source/screenplay';
 
 describe('When enterValue is called with a target and a value', function () {
     const remoteMock = Dido.createMethodMock(remote, ClientMock);
     const theTarget = Target.called('#textField');
     const theValue = 45;
+    let serverMock: ServerMock;
     let phoneClient: Client<any>;
     let operatePhonePromise;
 
     beforeEach(function () {
+        serverMock = new ServerMock();
         phoneClient = remoteMock();
         operatePhonePromise = OperatePhone.using(phoneClient).enterValue(theTarget, theValue);
     });
@@ -21,7 +23,7 @@ describe('When enterValue is called with a target and a value', function () {
 
     describe('And the value was set successfully', function () {
         beforeEach(function () {
-            differed.setValue.resolve()
+            serverMock.respondTo('setValue').withSuccess()
         });
 
         it('Then it should return a fulfilled promise', async function () {
@@ -30,14 +32,14 @@ describe('When enterValue is called with a target and a value', function () {
     });
 
     describe('And it failed to set the value', function () {
-        const cantBeFoundErr = 'Can\'t find it man';
+        let error;
 
         beforeEach(function () {
-            differed.setValue.reject(cantBeFoundErr)
+            error = serverMock.respondTo('setValue').withRejection()
         });
 
         it('Then it should return a rejected promise with the error', async function () {
-            await expect(operatePhonePromise).to.be.rejectedWith(cantBeFoundErr)
+            await expect(operatePhonePromise).to.be.rejectedWith(error)
         });
     });
 });

@@ -52,7 +52,7 @@ export interface ElementsResponse {
 }
 
 export class ServerMock {
-    private readonly connectionError = new Error('Cannot connect to port 8246, access denied');
+    private readonly error = new Error('This is a random error');
 
     private readonly elementIdTextResponses: Array<Object>;
 
@@ -67,16 +67,16 @@ export class ServerMock {
                 return serverMock[propertyName]
             },
             withRejection() : Error {
-                differed[endpointCall].reject(serverMock.connectionError);
-                return serverMock.connectionError;
+                differed[endpointCall].reject(serverMock.error);
+                return serverMock.error;
             },
         }
     }
 
     disconnect() {
         differed.elementIdText[0].resolve(this.elementIdTextResponses[0]);
-        differed.elementIdText[1].reject(this.connectionError);
-        return this.connectionError
+        differed.elementIdText[1].reject(this.error);
+        return this.error
     }
 
     connect() {
@@ -89,7 +89,7 @@ export class ServerMock {
         return Promise.all(promises);
     }
 
-    constructor(elementOfInterest) {
+    constructor(elementOfInterest = { id: 'UniqueElementId3', text: 'Mantle of Glory'}) {
         let elementsMock = [
             {
                 ELEMENT: "UniqueElementId1",

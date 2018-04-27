@@ -1,15 +1,17 @@
 import {Client, remote} from "webdriverio";
 import {Dido} from '../../../helpers/dido';
-import {ClientMock, differed} from '../../../helpers/client_server_mock';
+import {ClientMock, ServerMock, SupportedClientMethods} from '../../../helpers/client_server_mock';
 import {OperatePhone, Target} from '../../../../source/screenplay';
 
 describe('When touch is called with a target', function () {
     const remoteMock = Dido.createMethodMock(remote, ClientMock);
     let phoneClient: Client<any>;
     let touchResponsePromise: Promise<void>;
+    let serverMock : ServerMock;
     const theTarget = Target.called('#doStuff');
 
     beforeEach(function () {
+        serverMock = new ServerMock();
         phoneClient = remoteMock();
         touchResponsePromise = OperatePhone.using(phoneClient).touch(theTarget);
     });
@@ -20,7 +22,7 @@ describe('When touch is called with a target', function () {
 
     describe('And the target is successfully touched', function () {
         beforeEach(function () {
-            differed.touchElement.resolve();
+            serverMock.respondTo('touchElement').withSuccess()
         });
 
         it('Then phoneClient.touch should resolve with undefined', async function () {
@@ -29,14 +31,14 @@ describe('When touch is called with a target', function () {
     });
 
     describe('And the target cannot be found', function () {
-        const cantBeFoundErr = 'Can\'t find it man';
+        let error;
 
         beforeEach(function () {
-            differed.touchElement.reject(cantBeFoundErr);
+            error = serverMock.respondTo('touchElement').withRejection()
         });
 
         it('Then phoneClient.touch should resolve with undefined', async function () {
-            await expect(touchResponsePromise).to.rejectedWith(cantBeFoundErr)
+            await expect(touchResponsePromise).to.rejectedWith(error)
         });
     })
 });

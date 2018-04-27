@@ -7,9 +7,9 @@ import {OperatePhone, Target} from '../../../../source/screenplay';
 
 describe('When selectElementFromList is called with a targets selector', function () {
     const remoteMock = Dido.createMethodMock(remote, ClientMock);
-    const elemenToBeSelected = {
+    const elementToBeSelected = {
         text: 'Magic Beans',
-        id: "UniqueElementId2"
+        id: 'UniqueElementId2'
     };
     const theTarget = Target.called('.searchResults');
     let phoneClient: Client<any>;
@@ -17,9 +17,9 @@ describe('When selectElementFromList is called with a targets selector', functio
     let operatePhonePromise;
 
     beforeEach(function () {
-        serverMock = new ServerMock(elemenToBeSelected);
+        serverMock = new ServerMock(elementToBeSelected);
         phoneClient = remoteMock();
-        operatePhonePromise = OperatePhone.using(phoneClient).selectElementFromList(theTarget, elemenToBeSelected.text);
+        operatePhonePromise = OperatePhone.using(phoneClient).selectElementFromList(theTarget, elementToBeSelected.text);
     });
 
     it('Then it should call phoneClient.element with the target selector', function () {
@@ -45,7 +45,7 @@ describe('When selectElementFromList is called with a targets selector', functio
 
             describe('And phoneClient.elementIdText is successfully called for each element in the element array', function () {
                 it('Then phoneClient.touchId should be called with the selected element\'s id', function () {
-                    expect(phoneClient.elementIdClick).to.have.been.calledWith(elemenToBeSelected.id)
+                    expect(phoneClient.elementIdClick).to.have.been.calledWith(elementToBeSelected.id)
                 });
 
                 describe('And phoneClient.elementIdClick was successful', function () {
