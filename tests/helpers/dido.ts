@@ -1,13 +1,13 @@
 export interface Constructor<T> {
-    new(...args): T;
+    new(...args: any[]): T;
 }
 
 export class Dido {
-    static createMethodMock(methodName: Function, ResponseConstructor: Constructor<any>) {
+    public static createMethodMock(methodName: (...args: any[]) => any, ResponseConstructor: Constructor<any>): any {
         return new Proxy(methodName, {
-            apply: function () {
+            apply(): any {
                 return new ResponseConstructor();
-            }
+            },
         });
     }
 }

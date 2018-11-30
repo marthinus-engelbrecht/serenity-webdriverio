@@ -1,5 +1,5 @@
-import {Differed} from './differed';
 import {Element} from "webdriverio";
+import {Differed} from "./differed";
 
 export let differed: DifferedPromises;
 
@@ -7,109 +7,150 @@ export class DifferedPromises {
     public touchElement: Differed<Element>;
     public setValue: Differed<void>;
     public elements = new Differed<Element[]>();
-    public elementIdText: Differed<string>[];
+    public elementIdText: Array<Differed<string>>;
     public elementIdClick = new Differed<Element[]>();
 }
 
 export class ClientMock {
-    private elementIdTextCallCount = 0;
-
-    constructor() {
+    public constructor() {
         differed = new DifferedPromises();
         differed.elementIdText = [
             new Differed<string>(),
-            new Differed<string>()
+            new Differed<string>(),
         ];
         differed.touchElement = new Differed<Element>();
         differed.setValue = new Differed<void>();
     }
 
-    touch = sinon.spy(() => {
-        return differed.touchElement.promise
+    private elementIdTextCallCount = 0;
+
+    public touch = sinon.spy(() => {
+        return differed.touchElement.promise;
     });
 
-    setValue = sinon.spy(() => {
-        return differed.setValue.promise
+    public setValue = sinon.spy(() => {
+        return differed.setValue.promise;
     });
 
-    elements = sinon.spy(() => {
-        return differed.elements.promise
+    public elements = sinon.spy(() => {
+        return differed.elements.promise;
     });
 
-    elementIdText = sinon.spy(() => {
-        let {promise} = differed.elementIdText[this.elementIdTextCallCount];
+    public elementIdText = sinon.spy(() => {
+        const {promise} = differed.elementIdText[this.elementIdTextCallCount];
         this.elementIdTextCallCount = this.elementIdTextCallCount + 1;
         return promise;
     });
 
-    elementIdClick = sinon.spy(() => {
-        return differed.elementIdClick.promise
+    public elementIdClick = sinon.spy(() => {
+        return differed.elementIdClick.promise;
     });
 }
 
 export interface ElementsResponse {
-    value: Array<Element>
+    value: Element[];
+}
+
+export interface ElementIdTextResponse {
+    value: string;
 }
 
 export class ServerMock {
-    private readonly error = new Error('This is a random error');
 
-    private readonly elementIdTextResponses: Array<Object>;
-
-    private readonly elementsResponse: ElementsResponse;
-
-    respondTo(endpointCall: string) {
-        let serverMock = this;
-        return {
-            withSuccess() : ElementsResponse {
-                let propertyName = endpointCall + 'Response';
-                differed[endpointCall].resolve(serverMock[propertyName]);
-                return serverMock[propertyName]
-            },
-            withRejection() : Error {
-                differed[endpointCall].reject(serverMock.error);
-                return serverMock.error;
-            },
-        }
-    }
-
-    disconnect() {
-        differed.elementIdText[0].resolve(this.elementIdTextResponses[0]);
-        differed.elementIdText[1].reject(this.error);
-        return this.error
-    }
-
-    connect() {
-        this.elementIdTextResponses.forEach((responseMock, index) => {
-            differed.elementIdText[index].resolve(responseMock)
-        });
-
-        const promises = differed.elementIdText.map(item => item.promise);
-
-        return Promise.all(promises);
-    }
-
-    constructor(elementOfInterest = { id: 'UniqueElementId3', text: 'Mantle of Glory'}) {
-        let elementsMock = [
+    public constructor(elementOfInterest = {id: "UniqueElementId3", text: "Mantle of Glory"}) {
+        const elementsMock = [
             {
                 ELEMENT: "UniqueElementId1",
             },
             {
-                ELEMENT: elementOfInterest.id
+                ELEMENT: elementOfInterest.id,
             },
         ];
 
-        this.elementIdTextResponses = [
+        const elementIdText = [
             {
-                value: "FLEECE OF GIDEON"
+                value: "FLEECE OF GIDEON",
             },
             {
-                value: elementOfInterest.text
-            }
+                value: elementOfInterest.text,
+            },
         ];
 
-        this.elementsResponse = {
-            value: elementsMock
+        const elements = {
+            value: elementsMock,
+        };
+
+        this.mockResponses = new ServerMockResponses(elementIdText, elements);
+    }
+
+    public respondTo<T extends keyof ServerMockResponses>(endpointCall: Extract<keyof DifferedPromises, T>,
+                                                          callNumber: number = 1): Respond<T> {
+        const serverMock = this;
+        return {
+            withSuccess(): ServerMockResponseKeys[T] {
+                const promiseOrPromises = differed[endpointCall];
+                if (endpointCall === "elementIdText") {
+                    const response = serverMock.mockResponses.elementIdText[callNumber];
+                    (promiseOrPromises as DifferedPromises["elementIdText"])[callNumber].resolve(response);
+                    return response;
+                } else {
+                    const response = serverMock.mockResponses[endpointCall as keyof ServerMockResponses];
+                    (promiseOrPromises as DifferedPromises[Exclude<keyof DifferedPromises, "elementIdText">])
+                        .resolve(response);
+                    return response;
+                }
+            },
+            withRejection(): Error {
+                const promiseOrPromises = differed[endpointCall];
+
+                if (promiseOrPromises instanceof Array) {
+                    promiseOrPromises[callNumber].resolve(serverMock.error);
+                } else {
+                    (promiseOrPromises as DifferedPromises[Exclude<keyof DifferedPromises, "elementIdText">])
+                        .reject(serverMock.error);
+                }
+                return serverMock.error;
+            },
         };
     }
+
+    public disconnect(): Error {
+        differed.elementIdText[0].resolve(this.mockResponses.elementIdText[0]);
+        differed.elementIdText[1].reject(this.error);
+        return this.error;
+    }
+
+    public connect(): Promise<string[]> {
+        this.mockResponses.elementIdText.forEach((responseMock, index) => {
+            differed.elementIdText[index].resolve(responseMock);
+        });
+
+        const promises = differed.elementIdText.map((item) => item.promise);
+
+        return Promise.all(promises);
+    }
+
+    private readonly error = new Error("This is a random error");
+
+    private readonly mockResponses: ServerMockResponses;
+}
+
+export class ServerMockResponses implements ServerMockResponseKeys {
+    constructor(public readonly elementIdText?: ElementIdTextResponse[],
+                public elements?: ElementsResponse,
+                public setValue?: void,
+                public elementIdClick?: Element[],
+                public touchElement?: Element[],
+    ) {
+
+    }
+}
+
+export type ServerMockResponseKeys = {
+    [P in keyof DifferedPromises]?: any
+};
+
+export interface Respond<T extends keyof ServerMockResponses> {
+    withSuccess: () => ServerMockResponses[T];
+    withRejection: () => Error;
 }

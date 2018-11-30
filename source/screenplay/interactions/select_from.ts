@@ -1,24 +1,24 @@
-import {AnswersQuestions, Interaction, UsesAbilities} from '@serenity-js/core/lib/screenplay';
-import {Target} from '../ui';
-import {OperatePhone} from '../abilities';
+import {AnswersQuestions, Interaction, UsesAbilities} from "@serenity-js/core/lib/screenplay";
+import {OperatePhone} from "../abilities";
+import {Target} from "../ui";
 
 export class SelectFrom implements Interaction {
-    private text;
-
-    static the(target: Target) {
+    public static the(target: Target): SelectFrom {
         return new SelectFrom(target);
     }
 
-    constructor(readonly target: Target) {
+    public constructor(readonly target: Target) {
 
     }
 
-    itemContaining(text : string) : SelectFrom {
+    public itemContaining(text: string): SelectFrom {
         this.text = text;
         return this;
     }
 
-    performAs(actor: UsesAbilities & AnswersQuestions): Promise<void> {
+    public performAs(actor: UsesAbilities & AnswersQuestions): Promise<void> {
         return OperatePhone.as(actor).selectElementFromList(this.target, this.text);
     }
+
+    private text: string;
 }

@@ -1,41 +1,70 @@
 {
-  "extends": "tslint:latest",
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
   "rules": {
-    "trailing-comma": [false],
-    "quotemark": [true, "single", "avoid-escape"],
-    "one-variable-per-declaration": false,
-    "member-access": false,
-    "typedef-whitespace":
-    [
+    "typedef": [
+      true,
+      "call-signature",
+      "property-declaration"
+    ],
+    "member-ordering": [
       true,
       {
-        "call-signature": "nospace",
-        "index-signature": "nospace",
-        "parameter": "nospace",
-        "property-declaration": "nospace",
-        "variable-declaration": "nospace"
-      },
-      {
-        "call-signature": "onespace",
-        "index-signature": "onespace",
-        "parameter": "onespace",
-        "property-declaration": "space",
-        "variable-declaration": "space"
+        "order": [
+          "public-constructor",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method",
+          "private-instance-field",
+          "public-static-field",
+          "public-instance-field",
+          "private-static-field"
+        ]
       }
     ],
-    "object-literal-sort-keys": false,
-    "no-bitwise": false,
-    "one-line": false,
-    "variable-name": [true, "ban-keywords"],
-    "interface-name": [true, "never-prefix"],
-    "max-line-length": [true, 160],
-    "member-ordering": [true,
-      "public-before-private",
-      "static-before-instance",
-      "variables-before-functions"
+    "ban-types": {
+      "options": [
+        [
+          "Object",
+          "Avoid using the `Object` type. Did you mean `object`?"
+        ],
+        [
+          "Function",
+          "Avoid using the `Function` type. Prefer a specific function type, like `() => void`."
+        ],
+        [
+          "Boolean",
+          "Avoid using the `Boolean` type. Did you mean `boolean`?"
+        ],
+        [
+          "Number",
+          "Avoid using the `Number` type. Did you mean `number`?"
+        ],
+        [
+          "String",
+          "Avoid using the `String` type. Did you mean `string`?"
+        ]
+      ]
+    },
+    "cyclomatic-complexity": [
+      true,
+      10
     ],
-    "only-arrow-functions": false,
-    "arrow-parens": [ true, "ban-single-arg-parens" ],
-    "max-classes-per-file": false
-  }
+    "no-namespace": [
+      true,
+      "allow-declarations"
+    ],
+    "interface-name": [
+      true,
+      "never-prefix"
+    ],
+    "no-reference": true,
+    "no-parameter-reassignment": true,
+    "only-arrow-functions": false
+  },
+  "rulesDirectory": []
 }

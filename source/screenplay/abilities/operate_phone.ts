@@ -1,77 +1,77 @@
 import {Ability, UsesAbilities} from "@serenity-js/core/lib/screenplay";
-import {Client} from 'webdriverio';
-import {Target} from '../ui';
+import {Client} from "webdriverio";
+import {Target} from "../ui";
 
 export class OperatePhone implements Ability {
-    static using(phoneClient: Client<any>): OperatePhone {
+    public static using(phoneClient: Client<any>): OperatePhone {
         return new OperatePhone(phoneClient);
     }
 
-    static as(actor: UsesAbilities): OperatePhone {
+    public static as(actor: UsesAbilities): OperatePhone {
         return actor.abilityTo(OperatePhone);
     }
 
     constructor(private phoneClient: Client<any>) {
     }
 
-    touch(target: Target): Promise<void> {
+    public touch(target: Target): Promise<void> {
         return new Promise((resolve, reject) => {
             this.phoneClient.touch(target.selector, false)
-                .then(function () {
-                    //ensure void return type
-                    resolve()
+                .then(function(): void {
+                    // ensure void return type
+                    resolve();
                 })
-                .catch(reject)
-        })
+                .catch(reject);
+        });
     }
 
-    enterValue(target: Target, value: string | number | Array<any>): PromiseLike<void> {
+    public enterValue(target: Target, value: string | number | any[]): PromiseLike<void> {
         return new Promise((resolve, reject) => [
             this.phoneClient.setValue(target.selector, value)
                 .then(() => resolve())
-                .catch(reject)
-        ])
+                .catch(reject),
+        ]);
     }
 
-    selectElementFromList(target: Target, text: string): Promise<void> {
+    public selectElementFromList(target: Target, text: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
                 const elementsIdArray = await this.getElementIds(target);
                 const elementsTextArray = await this.getElementsText(elementsIdArray);
                 const elementsArray = elementsIdArray.map((id, index) => {
                     return {
-                        id: id,
-                        text: elementsTextArray[index]
-                    }
+                        id,
+                        text: elementsTextArray[index],
+                    };
                 });
 
-                const selectedElement = elementsArray.find(element => element.text === text);
+                const selectedElement = elementsArray.find((element) => element.text === text);
                 await this.phoneClient.elementIdClick(selectedElement.id);
-                resolve()
+                resolve();
             } catch (error) {
-                reject(error)
+                reject(error);
             }
-        })
+        });
     }
 
-    private async getElementIds(target: Target) {
-        const rawResults = await this.phoneClient.elements(target.selector);
-        const rawElementsArray = rawResults.value;
-        return rawElementsArray.map(item => item.ELEMENT);
-    }
-
-    async listIncludes(target: Target, item: string) : Promise<boolean> {
+    public async listIncludes(target: Target, item: string): Promise<boolean> {
         const elementsIdArray = await this.getElementIds(target);
         const elementTextArray = await this.getElementsText(elementsIdArray);
         return elementTextArray.includes(item);
     }
 
-    private async getElementsText(elementsIdArray: string[]) : Promise<string[]>{
-        let promises = [];
+    private async getElementIds(target: Target): Promise<string[]> {
+        const rawResults = await this.phoneClient.elements(target.selector);
+        const rawElementsArray = rawResults.value;
+        return rawElementsArray.map((item) => item.ELEMENT);
+    }
+
+    private async getElementsText(elementsIdArray: string[]): Promise<string[]> {
+        const promises: Array<Promise<string>> = [];
 
         elementsIdArray.forEach((elementId) => {
-            const promise = this.phoneClient.elementIdText(elementId).then(item => item.value);
-            promises.push(promise)
+            const promise = this.phoneClient.elementIdText(elementId).then((item) => item.value);
+            promises.push(promise as any as Promise<string>);
         });
 
         return await Promise.all(promises);

@@ -1,23 +1,31 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "lib": [ "es7", "dom" ],
+    "target": "ES2017",
     "module": "commonjs",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,
     "outDir": "./staging/transpiled",
-    "rootDir": "./"
+    "rootDir": "./",
+    "paths": {
+      "*": [
+        "declarations/*"
+      ]
+    },
+    "baseUrl": "."
   },
 
   "include": [
-    "source/**/*.ts",
-    "tests/**/*.ts"
+    "**/*.ts"
   ],
 
   "exclude": [
     "node_modules",
-    "examples"
+    "examples",
+    "staging"
   ]
 }
